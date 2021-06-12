@@ -1,0 +1,113 @@
+{% extends "Layout.twig" %}
+
+{% block style %}
+<link rel="stylesheet" href="/assets/css/gestion_sequence.css">
+<style>
+    .notification{
+      position: fixed;
+      bottom: 0;
+      left:0;
+      width: 100%;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div id="notification_block" class="notification" style="z-index: 999;display: none;">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="hideNotification()">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    <p></p>
+</div>
+
+<h1>Gestion des events</h1>
+<table class="table table-sm table-hover">
+    <thead>
+        <tr>
+            <th style="width: 25%;">Titre</th>
+            <th style="width: 25%;">Description</th>
+            <th style="width: 40%;">Date</th>
+            <th style="width: 5%;"></th>
+            <th style="width: 5%;"></th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for event in events %}
+            <tr>
+            <td class="panel_titleEvenement"><span class="editable">{{ event.title }}</span></td>
+            <td class="panel_descriptionEvenement"><span class="editable">{{ event.description }}</span></td>
+            <td class="panel_dateEvenement"><span class="editable">{{ event.date }}</span></td>
+            </td>
+
+            <td class="panel_delete">
+                <input type="button" value="Supprimer" class="btn btn-danger delCompteBtn" data-toggle="modal"
+                    data-target="#deleteEvent{{ event.id }}">
+                <div class="modal fade" id="deleteEvent{{ event.id }}" tabindex="-1" role="dialog"
+                    aria-labelledby="deleteEventLabel_{{ event.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title" id="deleteEventLabel_{{ event.id }}">Supprimer un evenement :</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p>Êtes-vous sûr de vouloir supprimer l'evenement : {{ event.title }} ?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                                <button type="button" class="btn btn-danger btn-ok"
+                                    onclick="deleteEvent({{ event.id }}, this)">Supprimer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block script %}
+<script>
+function hideNotification() {
+    $('#notification_block').fadeOut('500', () => {
+        $('#notification_block').removeClass();
+    });
+}
+
+function showNotification(libelle_bootstrap, message) {
+    hideNotification();
+    $('#notification_block p').text(message)
+    $('#notification_block').addClass("notification")
+    $('#notification_block').addClass('alert alert-' + libelle_bootstrap)
+    $('#notification_block').fadeIn('500');
+}
+
+function deleteEvent(id, leBtn) {
+    let model = $(leBtn).parents().closest('.modal');
+    let lineDelet = $(leBtn).parents().closest('tr');
+
+    let http = new XMLHttpRequest();
+    let params =
+        'id=' + id;
+    http.open('POST', '{{ path_for('eventDelete') }}', true);
+
+    http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    http.onreadystatechange = function () {
+        if (http.readyState == 4 && http.status == 200) {
+            if (http.responseText == 'success') {
+                $(model).modal('hide');
+                showNotification('success', "L'evenement a bien été supprimé.");
+                $(lineDelet).hide('slow', function () {
+                    $(lineDelet).remove();
+                });
+            } else {
+                showNotification('danger', 'Erreur : ' + http.responseText);
+            }
+        }
+    }
+    http.send(params);
+}
+</script>
+{% endblock %}

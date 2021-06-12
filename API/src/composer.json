@@ -1,0 +1,16 @@
+{
+  "name": "demo/docketu",
+   "description": "demo docketu",
+  "require" : {
+    "php": ">=7.0",
+    "slim/slim": "^3.0",
+    "illuminate/database": "^8.33",
+    "monolog/monolog": "^2.2",
+    "erusev/parsedown": "^1.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "ReunionouAPI\\":"ReunionouAPI/"
+    }
+  }
+}
